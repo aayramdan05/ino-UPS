@@ -13,6 +13,11 @@ const int lowbatteryModePin = 7;
 const int relayPin = 2;
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // Ganti dengan MAC address yang sesuai
+// Tentukan alamat IP, subnet mask, dan gateway
+IPAddress ip(0,0,0,0);        // Ganti dengan alamat IP yang diinginkan
+// IPAddress myDns(192, 168, 56, 14);      // Ganti dengan DNS server jika perlu
+// IPAddress gateway(10, 92, 160, 1);    // Ganti dengan gateway router
+// IPAddress subnet(255, 255, 255, 0);   // Ganti dengan subnet mask
 
 const char* mqttServer = "10.92.49.15"; // Alamat IP broker MQTT
 const int mqttPort = 1883; // Port broker MQTT
@@ -23,12 +28,14 @@ EthernetClient ethClient; // Objek untuk Ethernet
 PubSubClient mqttClient(ethClient); // Objek untuk MQTT
 
 void setup() {
-  Serial.begin(9600); // Mulai komunikasi serial
+  Serial.begin(9600);
+  Serial.println("Arduino running"); // Mulai komunikasi serial
   pinMode(batteryModePin, INPUT_PULLUP); // Set pin sebagai input dengan pull-up
   pinMode(lowbatteryModePin, INPUT_PULLUP);
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, LOW);
   // Mulai Ethernet
+  delay(2000);
   Ethernet.begin(mac);
   
   // Cek hardware Ethernet
@@ -61,11 +68,7 @@ void setup() {
 
 void loop() {
   if (Ethernet.localIP() == IPAddress(0, 0, 0, 0)) {
-    Serial.println("Waiting for DHCP...");
-    delay(1000); // Tunggu 1 detik sebelum coba lagi
-        // Restart Ethernet
-    Ethernet.begin(mac);
-    // Baca status pin
+        // Baca status pin
     int batteryModeState = digitalRead(batteryModePin);
     int lowbatteryModeState = digitalRead(lowbatteryModePin);
 
@@ -77,6 +80,10 @@ void loop() {
     Serial.print("Low Battery Mode : ");
     Serial.println(lowBatteryModeStatus);
 
+    Serial.println("Waiting for DHCP...");
+    delay(1000); // Tunggu 1 detik sebelum coba lagi
+        // Restart Ethernet
+    Ethernet.begin(mac);
   } else {
     Serial.print("Assigned IP address: ");
     Serial.println(Ethernet.localIP());
